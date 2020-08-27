@@ -21,12 +21,12 @@
     </header>
 
 
-    <section>
-        <div class="container mx-auto">
+    <section id="search">
+        <div class="container mx-auto" id="search-container">
             <form class="w-full max-w-sm">
-                <div class="flex items-center border-b border-teal-500 py-2">
-                    <input class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" type="text" placeholder="Search" aria-label="Search Query">
-                    <button class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded" type="button">
+                <div class="grid">
+                    <input class="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none " type="text " placeholder="Search " aria-label="Search Query" id="search-input">
+                    <button class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded " type="button" id="search-button">
                Search
               </button>
                 </div>
@@ -36,28 +36,28 @@
 
     <br>
 
-    <section>
-        <div class="container mx-auto">
-            <div class="flex mb-4">
-                <div class="w-1/2 bg-gray-400 h-12">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo odit rerum quisquam expedita, laudantium neque illum, porro ipsum soluta repudiandae tempore id, tenetur possimus minus magnam. Dignissimos, debitis! Asperiores, culpa.</div>
-                <div class="w-1/2 bg-gray-500 h-12">Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur modi voluptas dolores numquam corporis vero neque iusto dicta temporibus quos, amet magnam adipisci esse architecto quam totam! Officiis, quos odio.</div>
+    <section id="results">
+        <div class="container mx-auto" id="results-container">
+            <div class="grid grid-cols-2 gap-4">
+                <div id="results-left">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo odit rerum quisquam expedita, laudantium neque illum, porro ipsum soluta repudiandae tempore id, tenetur possimus minus magnam. Dignissimos, debitis! Asperiores, culpa.</div>
+                <div id="results-right">Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur modi voluptas dolores numquam corporis vero neque iusto dicta temporibus quos, amet magnam adipisci esse architecto quam totam! Officiis, quos odio.</div>
             </div>
         </div>
     </section>
 
     <br>
 
-    <section>
-        <div class="container mx-auto">
-            <div class="flex mb-4">
-                <div class="bg-gray-400 h-12">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo odit rerum quisquam expedita, laudantium neque illum, porro ipsum soluta repudiandae tempore id, tenetur possimus minus magnam. Dignissimos, debitis! Asperiores, culpa.</div>
+    <section id="map">
+        <div class="container mx-auto" id="map-container">
+            <div class="grid">
+                <div>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo odit rerum quisquam expedita, laudantium neque illum, porro ipsum soluta repudiandae tempore id, tenetur possimus minus magnam. Dignissimos, debitis! Asperiores, culpa.</div>
             </div>
         </div>
     </section>
 
     <footer></footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js "></script>
 </body>
 
 </html>
