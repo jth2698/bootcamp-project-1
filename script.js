@@ -1,7 +1,14 @@
+const spendCap = 200;
+const spendLow = spendCap - (spendCap * .25);
+
 const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
 
+const resultsContainer = $("#results-container");
+
 searchBtn.on("click", function () {
+
+    resultsContainer.empty();
 
     const baseURL = "https://api.bestbuy.com/v1/products";
 
@@ -9,7 +16,7 @@ searchBtn.on("click", function () {
     query = query.toString();
     query = query.trim();
 
-    let userPostalCode = "";
+    let postalCode = "78751";
 
     let queryURL = "((search=" + query + ")";
 
@@ -25,31 +32,44 @@ searchBtn.on("click", function () {
 
     let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
 
-    let productURL = baseURL + searchType + queryURL + activeProducts + inStoreURL + pageSize + cursorMark + BBAPIKey + format;
+    let productURL = baseURL + queryURL + activeProducts + inStoreURL + pageSize + cursorMark + BBAPIKey + format;
 
     $.ajax({
         url: productURL,
         method: "GET",
 
-    }).then(function (response) {
+    }).then(function (productResponse) {
 
         console.log(productURL);
 
-        let allProducts = response.products;
+        let allReturnedProducts = productResponse.products;
 
-        let allProductSKUs = [];
+        let allMatchingProducts = [{}];
 
-        for (i = 0; i < allProducts.length; i++) {
+        for (i = 1; i < allReturnedProducts.length - 1; i++) {
 
-            let productSKU = allProducts[i].sku;
-            allProductSKUs.push(productSKU);
+            let productName = allReturnedProducts[i].name;
+            let productImageSrc = allReturnedProducts[i].thumbnailImage;
+            let productSKU = allReturnedProducts[i].sku;
+            let productPrice = allReturnedProducts[i].salePrice;
+
+            if (productPrice > spendLow && productPrice < spendCap) {
+
+                allMatchingProducts[i] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice };
+            }
         }
 
-        console.log(allProductSKUs);
+        allMatchingProducts.sort((a, b) => {
+            return a.price - b.price;
+        });
 
-        for (i = 0; i < allProductSKUs.length; i++) {
+        console.log(allMatchingProducts);
 
-            let skuInsert = "/" + allProductSKUs[i] + "/stores.json?";
+        for (i = 1; i < allMatchingProducts.length; i++) {
+
+            console.log(allMatchingProducts[i]);
+
+            let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
 
             let postalCodeInsert = "postalCode=" + postalCode;
 
@@ -59,17 +79,39 @@ searchBtn.on("click", function () {
                 url: storeURL,
                 method: "GET",
 
-            }).then(function (response) {
+            }).then(function (storeResponse) {
 
-                console.log(storeURL);
+                if (storeResponse.stores != "") {
 
+                    console.log(storeURL);
 
+                    productDiv = $("<div></div>");
+                    productDiv.text(allMatchingProducts[i].name);
 
-                let localavailabilityURL = queryURL +
+                    productImage = $("<img></img>");
+                    productImage.attr("src", allMatchingProducts[i].imageSource);
+                    productDiv.append(productImage);
 
-                    https://api.bestbuy.com/v1/stores(area(78751,100))+products(sku%20in())?show=storeId,name,products.sku,products.name&format=json&apiKey=GGmupVaRMy1eDvoIlNss1A0G
+                    storeDiv = $("<div></div>");
 
-                    url_store = 'https://api.bestbuy.com/v1/products/' + document.getElementById('partnumber').value.trim() + '/stores.json?postalCode=' + document.getElementById('zipcode').value.trim() + '&apiKey=08JJS1ffSirGzNn7hMjRcjBN' + '&irclickid=yXE2NrTAhxyJU580MdV3iVCmUklQd9yBr2QUUA0&irgwc=1&ref=198&loc=126338&acampID=614286';
+                    storeHeader = $("<h4></h4>");
+                    storeHeader.text("Available at:");
+                    storeDiv.append(storeHeader);
+
+                    for (i = 0; i < storeResponse.stores.length - 1; i++) {
+                        console.log(storeResponse.stores[i].name);
+                        storePara = $("<p></p>");
+                        storePara.text(storeResponse.stores[i].name);
+                        storeDiv.append(storePara);
+                    }
+
+                    productDiv.append(storeDiv);
+
+                    resultsContainer.append(productDiv);
+                }
+
             })
 
-        })
+        }
+    })
+})
