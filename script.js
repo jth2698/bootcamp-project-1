@@ -10,9 +10,11 @@ const resultsContainer = $("#results-container");
 
 const allMatchingProducts = [];
 
-function returnProducts() {
+let baseURL = "https://api.bestbuy.com/v1/products";
 
-    let baseURL = "https://api.bestbuy.com/v1/products";
+let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
+
+function returnProducts() {
 
     let query = searchInput.val();
     query = query.toString();
@@ -30,11 +32,11 @@ function returnProducts() {
 
     let format = "&format=json";
 
-    let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
-
     let productURL = baseURL + queryURL + activeProducts + inStoreURL + pageSize + cursorMark + BBAPIKey + format;
 
     let allMatchingProductsI = 0;
+
+    console.log(productURL);
 
     $.ajax({
         url: productURL,
@@ -62,25 +64,16 @@ function returnProducts() {
                 allMatchingProductsI++;
             }
         }
+
+        sortProducts();
     })
-}
-
-function sortProducts() {
-
-    allMatchingProducts.sort((a, b) => {
-
-        return a.price - b.price;
-    });
-
-    console.log(allMatchingProducts);
-
-    return allMatchingProducts;
-
 }
 
 function populateStores() {
 
     for (i = 0; i < allMatchingProducts.length - 1; i++) {
+
+        console.log("populateStores running");
 
         let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
 
@@ -100,17 +93,30 @@ function populateStores() {
 
                 allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
             }
+
+            populateResults();
         })
     }
+}
+
+function sortProducts() {
+
+    allMatchingProducts.sort((a, b) => {
+
+        return a.price - b.price;
+    });
 
     console.log(allMatchingProducts);
+
+    populateStores();
+
 }
 
 function populateResults() {
 
-    for (i = 0; i < allMatchingProducts.length - 1; i++) {
+    for (i = 0; i < allMatchingProducts.length; i++) {
 
-        console.log("content loop running");
+        console.log("content loop running" + i);
 
         productDiv = $("<div></div>");
 
@@ -134,9 +140,14 @@ function populateResults() {
 
         storePara = $("<p></p>");
         storePara.text(allMatchingProducts[i].stores);
-        storeDiv.append(storePara)
+        storeDiv.append(storePara);
+
+        productDiv.append(storeDiv);
 
     }
+
+    resultsContainer.append(productDiv);
+
 }
 
 searchBtn.on("click", function () {
@@ -144,13 +155,6 @@ searchBtn.on("click", function () {
     resultsContainer.empty();
 
     returnProducts();
-
-    sortProducts();
-
-    populateStores();
-
-    populateResults();
-
 })
 
 
