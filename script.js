@@ -1,21 +1,29 @@
 const postalCode = "78751";
 
+// target the two inputs and search button
 const spendInput = $("#spend-input");
-
 const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
 
+// target the results container
 const resultsContainer = $("#results-container");
 
-let baseURL = "https://api.bestbuy.com/v1/products";
+// globally define postal code, spend range, base BB URL, and the BB API key, and create an empty array to hold the object to be created from the BB API return
+// note that the zip is hard-coded until we can figure out how to pass zip from the BB API
 
-let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
+let postalCode = "78751";
 
 let spendCap = "";
 
 let spendLow = "";
 
+let baseURL = "https://api.bestbuy.com/v1/products";
+
+let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
+
 let allMatchingProducts = [];
+
+// spendRange function creates the spend range from the max spend input provided by user
 
 function spendRange() {
 
@@ -25,6 +33,8 @@ function spendRange() {
 
     spendLow = spendCap - (spendCap * .5);
 }
+
+// returnProducts returns all matching products in response to user search input. this function pushes the needed key-value pairs into the allMatchingProducts array. however, note that this does not return local stores.
 
 function returnProducts() {
 
@@ -56,8 +66,6 @@ function returnProducts() {
 
     }).then(function (productResponse) {
 
-        console.log("product .ajax getting from" + productURL);
-
         let allReturnedProducts = productResponse.products;
 
         for (i = 0; i < allReturnedProducts.length - 1; i++) {
@@ -68,6 +76,7 @@ function returnProducts() {
             let productImageSrc = allReturnedProducts[i].thumbnailImage;
             let productSKU = allReturnedProducts[i].sku;
             let productPrice = allReturnedProducts[i].salePrice;
+            // this remains as an empty array even after this function runs
             let productStores = [];
             let productURL = allReturnedProducts[i].url;
 
@@ -79,17 +88,18 @@ function returnProducts() {
             }
         }
 
+        // sortProducts always run as soon as BB product results are pushed into allMatchingProducts. see sortProducts description below populateStores.
         sortProducts();
     })
 }
 
+// populateStores pushes the store information into allMatchingProducts. note that this needs to be set up as an "async" function that waits for the result of the promise from the ajax call before. otherwise, the first loop will run before the promise reflected by the ajax call returns (meaning all stores will be pushed into the last allMatchingProducts object)
+
 async function populateStores() {
 
-    console.log("Pre-array slice is " + allMatchingProducts);
+    // we slice the allMatchingProducts array to the first 10 entries to avoid hammering the BB API. These will be the 10 cheapest witjin the spend range
 
     allMatchingProducts = allMatchingProducts.slice(0, 9);
-
-    console.log("After array slice is " + allMatchingProducts);
 
     try {
 
@@ -116,18 +126,8 @@ async function populateStores() {
 
                     console.log(storeURL);
 
-                    if (storeResponse.stores != "[]") {
-
-                        console.log("pushing stores");
-                        allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
-
-                    }
-
-                    else {
-
-                        console.log("pushing url");
-                        allMatchingProducts[i].stores.push("Not available locally. Try online at " + allMatchingProducts[i].url);
-                    }
+                    console.log("pushing stores");
+                    allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
 
                     console.log(allMatchingProducts);
                 }
@@ -140,6 +140,8 @@ async function populateStores() {
     }
 }
 
+// sortProducts actually runs before populateStores. it sorts all products in the original return to allMatchingProducts form price-low to price-high.
+
 function sortProducts() {
 
     console.log("sorting");
@@ -151,9 +153,12 @@ function sortProducts() {
 
     console.log(allMatchingProducts);
 
+    // note that populateStores is only called after sorting is finished.
     populateStores();
 
 }
+
+// populateResults creates the results on the page after opoulateStores has run. note that it is wrapped in a setTimeout to ensure that it does not run until after populateStores has completed. this is potentially a temporary fix to avoid creating empty results before populate stores has run.
 
 function populateResults() {
 
@@ -193,6 +198,7 @@ function populateResults() {
                 storePara.text(allMatchingProducts[i].stores);
                 storeDiv.append(storePara);
 
+                // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
             } else {
 
                 storeHeader = $("<h4></h4>")
@@ -211,6 +217,8 @@ function populateResults() {
     }, 5000);
 
 }
+
+// the on.click order. returnProducts calls sortProducts and sortProducts calls populateStores, so sortProduct and populateStores do not need to be seperately called. 
 
 searchBtn.on("click", function () {
 
