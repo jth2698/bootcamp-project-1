@@ -1,22 +1,24 @@
-const spendCap = 200;
-const spendLow = spendCap - (spendCap * .25);
+const spendCap = 1000;
+const spendLow = spendCap - (spendCap * .5);
+
+const postalCode = "78751";
 
 const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
 
 const resultsContainer = $("#results-container");
 
-searchBtn.on("click", function () {
+const allMatchingProducts = [];
 
-    resultsContainer.empty();
+let baseURL = "https://api.bestbuy.com/v1/products";
 
-    const baseURL = "https://api.bestbuy.com/v1/products";
+let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
+
+function returnProducts() {
 
     let query = searchInput.val();
     query = query.toString();
     query = query.trim();
-
-    let postalCode = "78751";
 
     let queryURL = "((search=" + query + ")";
 
@@ -26,19 +28,15 @@ searchBtn.on("click", function () {
 
     let pageSize = "pageSize=100"
 
- fix-bb-api-instoreavailability-bug
     let cursorMark = "&cursorMark=*"
-
-    console.log(query);
-
-    var BBApiKey = "GGmupVaRMy1eDvoIlNss1A0G";
- master
 
     let format = "&format=json";
 
-    let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
-
     let productURL = baseURL + queryURL + activeProducts + inStoreURL + pageSize + cursorMark + BBAPIKey + format;
+
+    let allMatchingProductsI = 0;
+
+    console.log(productURL);
 
     $.ajax({
         url: productURL,
@@ -50,9 +48,9 @@ searchBtn.on("click", function () {
 
         let allReturnedProducts = productResponse.products;
 
-        let allMatchingProducts = [{}];
+        for (i = 0; i < allReturnedProducts.length - 1; i++) {
 
-        for (i = 1; i < allReturnedProducts.length - 1; i++) {
+            console.log("pushing into allMatchingProducts")
 
             let productName = allReturnedProducts[i].name;
             let productImageSrc = allReturnedProducts[i].thumbnailImage;
@@ -61,69 +59,114 @@ searchBtn.on("click", function () {
 
             if (productPrice > spendLow && productPrice < spendCap) {
 
-                allMatchingProducts[i] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice };
+                allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "storeURL": baseURL + "/" + productSKU + "/stores.json?postalCode=" + postalCode + BBAPIKey, "stores": [] };
+
+                allMatchingProductsI++;
             }
         }
 
-        allMatchingProducts.sort((a, b) => {
-            return a.price - b.price;
-        });
+        sortProducts();
+    })
+}
+
+async function populateStores() {
+
+    for (i = 0; i < allMatchingProducts.length - 1; i++) {
+
+        console.log("populateStores running");
+
+        let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
+
+        let postalCodeInsert = "postalCode=" + postalCode;
+
+        let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
+
+        var storeResponse = await $.ajax({
+            url: storeURL,
+            method: "GET",
+
+        })
+
+        for (x = 0; x < storeResponse.stores.length - 1; x++) {
+
+            console.log(storeURL);
+
+            allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+
+            console.log(allMatchingProducts);
+        }
+
+    }
+    populateResults();
+
+}
+
+function sortProducts() {
+
+    allMatchingProducts.sort((a, b) => {
+
+        return a.price - b.price;
+    });
+
+    console.log(allMatchingProducts);
+
+    populateStores();
+
+}
+
+function populateResults() {
+
+    setTimeout(function () {
+
+        console.log("populateResults running");
 
         console.log(allMatchingProducts);
 
-        for (i = 1; i < allMatchingProducts.length; i++) {
+        for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
-            console.log(allMatchingProducts[i]);
+            console.log("content loop running" + i);
 
-            let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
+            productDiv = $("<div></div>");
 
-            let postalCodeInsert = "postalCode=" + postalCode;
+            namePara = $("<p></p>");
+            namePara.text(allMatchingProducts[i].name);
 
-            let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
+            pricePara = $("<p></p>").text(allMatchingProducts[i].price);
 
-            $.ajax({
-                url: storeURL,
-                method: "GET",
+            productDiv.append(namePara, pricePara);
 
-            }).then(function (storeResponse) {
+            productImage = $("<img></img>");
+            productImage.attr("src", allMatchingProducts[i].imageSource);
+            productDiv.append(productImage);
 
-                if (storeResponse.stores != "") {
+            storeDiv = $("<div></div>");
 
-                    console.log(storeURL);
+            storeHeader = $("<h4></h4>")
+            storeHeader.text("Available at:");
+            storeDiv.append(storeHeader);
 
-                    productDiv = $("<div></div>");
-                    productDiv.text(allMatchingProducts[i].name);
+            storePara = $("<p></p>");
+            console.log("writing " + allMatchingProducts[i].stores);
+            storePara.text(allMatchingProducts[i].stores);
+            storeDiv.append(storePara);
 
-                    productImage = $("<img></img>");
-                    productImage.attr("src", allMatchingProducts[i].imageSource);
-                    productDiv.append(productImage);
+            productDiv.append(storeDiv);
 
-                    storeDiv = $("<div></div>");
-
-                    storeHeader = $("<h4></h4>");
-                    storeHeader.text("Available at:");
-                    storeDiv.append(storeHeader);
-
-                    for (i = 0; i < storeResponse.stores.length - 1; i++) {
-                        console.log(storeResponse.stores[i].name);
-                        storePara = $("<p></p>");
-                        storePara.text(storeResponse.stores[i].name);
-                        storeDiv.append(storePara);
-                    }
-
-                    productDiv.append(storeDiv);
-
-                    resultsContainer.append(productDiv);
-                }
-
-            })
+            resultsContainer.append(productDiv);
 
         }
-    })
- fix-bb-api-instoreavailability-bug
+    }, 5000);
+
+}
+
+searchBtn.on("click", function () {
+
+    resultsContainer.empty();
+
+    returnProducts();
 })
 
-})
+
 
 var map, infoWindow;
 
@@ -134,7 +177,7 @@ function initMap() {
     });
     infoWindow = new google.maps.InfoWindow;
 
-    $.get("https://ipinfo.io?token=d92f854e302724", function(response) {
+    $.get("https://ipinfo.io?token=d92f854e302724", function (response) {
         console.log(response.ip, response.country);
         var coordinates = response.loc.split(",");
         console.log(coordinates);
@@ -172,6 +215,9 @@ function initMap() {
     // }
 }
 
+function getGeolocation() {
+    navigator.geolocation.getCurrentPosition(success, error);
+}
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
     infoWindow.setPosition(pos);
     infoWindow.setContent(browserHasGeolocation ?
