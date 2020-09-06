@@ -16,6 +16,8 @@ let allMatchingProducts = [];
 
 
 
+
+
 function returnProducts() {
 
     let query = searchInput.val();
@@ -58,10 +60,12 @@ function returnProducts() {
             let productImageSrc = allReturnedProducts[i].thumbnailImage;
             let productSKU = allReturnedProducts[i].sku;
             let productPrice = allReturnedProducts[i].salePrice;
+            let productStores = [];
+            let productURL = allReturnedProducts[i].url;
 
             if (productPrice > spendLow && productPrice < spendCap) {
 
-                allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "storeURL": baseURL + "/" + productSKU + "/stores.json?postalCode=" + postalCode + BBAPIKey, "stores": [] };
+                allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "stores": productStores, "url": productURL };
 
                 allMatchingProductsI++;
             }
@@ -102,7 +106,18 @@ async function populateStores() {
 
                     console.log(storeURL);
 
-                    allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+                    if (storeResponse.stores != "[]") {
+
+                        console.log("pushing stores");
+                        allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+
+                    }
+
+                    else {
+
+                        console.log("pushing url");
+                        allMatchingProducts[i].stores.push("Not available locally. Try online at " + allMatchingProducts[i].url);
+                    }
 
                     console.log(allMatchingProducts);
                 }
@@ -157,14 +172,26 @@ function populateResults() {
 
             storeDiv = $("<div></div>");
 
-            storeHeader = $("<h4></h4>")
-            storeHeader.text("Available at:");
-            storeDiv.append(storeHeader);
+            if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
 
-            storePara = $("<p></p>");
-            console.log("writing " + allMatchingProducts[i].stores);
-            storePara.text(allMatchingProducts[i].stores);
-            storeDiv.append(storePara);
+                storeHeader = $("<h4></h4>")
+                storeHeader.text("Available at:");
+                storeDiv.append(storeHeader);
+
+                storePara = $("<p></p>");
+                console.log("writing " + allMatchingProducts[i].stores);
+                storePara.text(allMatchingProducts[i].stores);
+                storeDiv.append(storePara);
+
+            } else {
+
+                storeHeader = $("<h4></h4>")
+                storeHeader.text("Not available locally!");
+                storeDiv.append(storeHeader);
+
+                storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
+                storeDiv.append(storePara);
+            }
 
             productDiv.append(storeDiv);
 
