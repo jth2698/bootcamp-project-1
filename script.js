@@ -1,7 +1,6 @@
-const spendCap = 1000;
-const spendLow = spendCap - (spendCap * .5);
-
 const postalCode = "78751";
+
+const spendInput = $("#spend-input");
 
 const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
@@ -12,11 +11,20 @@ let baseURL = "https://api.bestbuy.com/v1/products";
 
 let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
 
+let spendCap = "";
+
+let spendLow = "";
+
 let allMatchingProducts = [];
 
+function spendRange() {
 
+    spendCap = spendInput.val();
 
+    console.log(spendCap);
 
+    spendLow = spendCap - (spendCap * .5);
+}
 
 function returnProducts() {
 
@@ -77,9 +85,11 @@ function returnProducts() {
 
 async function populateStores() {
 
+    console.log("Pre-array slice is " + allMatchingProducts);
+
     allMatchingProducts = allMatchingProducts.slice(0, 9);
 
-    console.log(allMatchingProducts);
+    console.log("After array slice is " + allMatchingProducts);
 
     try {
 
@@ -205,6 +215,8 @@ function populateResults() {
 searchBtn.on("click", function () {
 
     resultsContainer.empty();
+
+    spendRange();
 
     returnProducts();
 
