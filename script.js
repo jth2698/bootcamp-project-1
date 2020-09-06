@@ -89,14 +89,17 @@ function populateStores() {
 
             for (x = 0; x < storeResponse.stores.length - 1; x++) {
 
-                console.log("pushing stores");
+                console.log(storeURL);
 
                 allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+
+                console.log(allMatchingProducts);
             }
 
-            populateResults();
         })
     }
+    populateResults();
+
 }
 
 function sortProducts() {
@@ -114,39 +117,46 @@ function sortProducts() {
 
 function populateResults() {
 
-    for (i = 0; i < allMatchingProducts.length; i++) {
+    setTimeout(function () {
 
-        console.log("content loop running" + i);
+        console.log("populateResults running");
 
-        productDiv = $("<div></div>");
+        console.log(allMatchingProducts);
 
-        namePara = $("<p></p>");
-        namePara.text(allMatchingProducts[i].name);
+        for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
-        pricePara = $("<p></p>");
-        pricePara.text(allMatchingProducts[i].price);
+            console.log("content loop running" + i);
 
-        productDiv.append(namePara, pricePara);
+            productDiv = $("<div></div>");
 
-        productImage = $("<img></img>");
-        productImage.attr("src", allMatchingProducts[i].imageSource);
-        productDiv.append(productImage);
+            namePara = $("<p></p>");
+            namePara.text(allMatchingProducts[i].name);
 
-        storeDiv = $("<div></div>");
+            pricePara = $("<p></p>").text(allMatchingProducts[i].price);
 
-        storeHeader = $("<h4></h4>");
-        storeHeader.text("Available at:");
-        storeDiv.append(storeHeader);
+            productDiv.append(namePara, pricePara);
 
-        storePara = $("<p></p>");
-        storePara.text(allMatchingProducts[i].stores);
-        storeDiv.append(storePara);
+            productImage = $("<img></img>");
+            productImage.attr("src", allMatchingProducts[i].imageSource);
+            productDiv.append(productImage);
 
-        productDiv.append(storeDiv);
+            storeDiv = $("<div></div>");
 
-    }
+            storeHeader = $("<h4></h4>")
+            storeHeader.text("Available at:");
+            storeDiv.append(storeHeader);
 
-    resultsContainer.append(productDiv);
+            storePara = $("<p></p>");
+            console.log("writing " + allMatchingProducts[i].stores);
+            storePara.text(allMatchingProducts[i].stores);
+            storeDiv.append(storePara);
+
+            productDiv.append(storeDiv);
+
+            resultsContainer.append(productDiv);
+
+        }
+    }, 5000);
 
 }
 
