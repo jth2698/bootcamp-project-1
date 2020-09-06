@@ -1,5 +1,3 @@
-const postalCode = "78751";
-
 // target the two inputs and search button
 const spendInput = $("#spend-input");
 const searchInput = $("#search-input");
