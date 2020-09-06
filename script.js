@@ -69,7 +69,7 @@ function returnProducts() {
     })
 }
 
-function populateStores() {
+async function populateStores() {
 
     for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
@@ -81,22 +81,21 @@ function populateStores() {
 
         let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
 
-        $.ajax({
+        var storeResponse = await $.ajax({
             url: storeURL,
             method: "GET",
 
-        }).then(function (storeResponse) {
-
-            for (x = 0; x < storeResponse.stores.length - 1; x++) {
-
-                console.log(storeURL);
-
-                allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
-
-                console.log(allMatchingProducts);
-            }
-
         })
+
+        for (x = 0; x < storeResponse.stores.length - 1; x++) {
+
+            console.log(storeURL);
+
+            allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+
+            console.log(allMatchingProducts);
+        }
+
     }
     populateResults();
 
