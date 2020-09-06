@@ -8,11 +8,13 @@ const searchBtn = $("#search-button");
 
 const resultsContainer = $("#results-container");
 
-const allMatchingProducts = [];
-
 let baseURL = "https://api.bestbuy.com/v1/products";
 
 let BBAPIKey = "&apiKey=GGmupVaRMy1eDvoIlNss1A0G";
+
+let allMatchingProducts = [];
+
+
 
 function returnProducts() {
 
@@ -44,7 +46,7 @@ function returnProducts() {
 
     }).then(function (productResponse) {
 
-        console.log(productURL);
+        console.log("product .ajax getting from" + productURL);
 
         let allReturnedProducts = productResponse.products;
 
@@ -71,37 +73,51 @@ function returnProducts() {
 
 async function populateStores() {
 
-    for (i = 0; i < allMatchingProducts.length - 1; i++) {
+    allMatchingProducts = allMatchingProducts.slice(0, 9);
 
-        console.log("populateStores running");
+    console.log(allMatchingProducts);
 
-        let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
+    try {
 
-        let postalCodeInsert = "postalCode=" + postalCode;
+        for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
-        let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
+            console.log("populateStores running");
 
-        var storeResponse = await $.ajax({
-            url: storeURL,
-            method: "GET",
+            let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
 
-        })
+            let postalCodeInsert = "postalCode=" + postalCode;
 
-        for (x = 0; x < storeResponse.stores.length - 1; x++) {
+            let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
 
-            console.log(storeURL);
+            var storeResponse = await $.ajax({
 
-            allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+                url: "https://cors-anywhere.herokuapp.com/" + storeURL,
+                method: "GET",
 
-            console.log(allMatchingProducts);
+            })
+
+            try {
+
+                for (x = 0; x < storeResponse.stores.length - 1; x++) {
+
+                    console.log(storeURL);
+
+                    allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+
+                    console.log(allMatchingProducts);
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
-
+    } catch (error) {
+        console.log(error);
     }
-    populateResults();
-
 }
 
 function sortProducts() {
+
+    console.log("sorting");
 
     allMatchingProducts.sort((a, b) => {
 
@@ -164,6 +180,8 @@ searchBtn.on("click", function () {
     resultsContainer.empty();
 
     returnProducts();
+
+    populateResults();
 })
 
 
