@@ -39,6 +39,8 @@ function returnProducts() {
     let query = searchInput.val();
     query = query.toString();
     query = query.trim();
+    query = query.replace(" ", "&search=");
+    console.log(query);
 
     let queryURL = "((search=" + query + ")";
 
@@ -59,7 +61,9 @@ function returnProducts() {
     console.log(productURL);
 
     $.ajax({
-        url: productURL,
+
+        // using this app as a quick fix to avoid CORS errors
+        url: "https://cors-anywhere.herokuapp.com/" + productURL,
         method: "GET",
 
     }).then(function (productResponse) {
@@ -76,71 +80,72 @@ function returnProducts() {
             let productPrice = allReturnedProducts[i].salePrice;
             // this remains as an empty array even after this function runs
             let productStores = [];
+            let productStoreAddresses = [];
             let productURL = allReturnedProducts[i].url;
 
             if (productPrice > spendLow && productPrice < spendCap) {
 
-                allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "stores": productStores, "url": productURL };
+                allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "stores": productStores, "storeAddresses": productStoreAddresses, "url": productURL };
 
                 allMatchingProductsI++;
             }
         }
-
         // sortProducts always run as soon as BB product results are pushed into allMatchingProducts. see sortProducts description below populateStores.
         sortProducts();
     })
 }
 
+
 // populateStores pushes the store information into allMatchingProducts. note that this needs to be set up as an "async" function that waits for the result of the promise from the ajax call before. otherwise, the first loop will run before the promise reflected by the ajax call returns (meaning all stores will be pushed into the last allMatchingProducts object)
 
 async function populateStores() {
 
-    // we slice the allMatchingProducts array to the first 10 entries to avoid hammering the BB API. These will be the 10 cheapest witjin the spend range
+    console.log("populateStores running");
+
+    // we slice the allMatchingProducts array to the first 10 entries to avoid hammering the BB API. These will be the 10 cheapest within the spend range
 
     allMatchingProducts = allMatchingProducts.slice(0, 9);
 
-    try {
+    for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
-        for (i = 0; i < allMatchingProducts.length - 1; i++) {
+        console.log("populateStores running");
 
-            console.log("populateStores running");
+        let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
 
-            let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
+        let postalCodeInsert = "postalCode=" + postalCode;
 
-            let postalCodeInsert = "postalCode=" + postalCode;
+        let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
 
-            let storeURL = baseURL + skuInsert + postalCodeInsert + BBAPIKey;
+        var storeResponse = await $.ajax({
 
-            var storeResponse = await $.ajax({
+            // using this app as a quick fix to avoid CORS errors
+            url: "https://cors-anywhere.herokuapp.com/" + storeURL,
+            method: "GET",
 
-                url: "https://cors-anywhere.herokuapp.com/" + storeURL,
-                method: "GET",
+        })
 
-            })
+        for (x = 0; x < storeResponse.stores.length - 1; x++) {
 
-            try {
+            console.log(storeURL);
 
-                for (x = 0; x < storeResponse.stores.length - 1; x++) {
+            console.log("pushing stores");
+            allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
+            allMatchingProducts[i].storeAddresses.push(JSON.stringify(storeResponse.stores[x].address));
 
-                    console.log(storeURL);
-
-                    console.log("pushing stores");
-                    allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
-
-                    console.log(allMatchingProducts);
-                }
-            } catch (error) {
-                console.log(error);
-            }
+            console.log(allMatchingProducts);
         }
-    } catch (error) {
-        console.log(error);
     }
+
+    // do not want populateResults to run until all stores have been populated
+    populateResults();
 }
+
 
 // sortProducts actually runs before populateStores. it sorts all products in the original return to allMatchingProducts form price-low to price-high.
 
 function sortProducts() {
+
+    console.log(allMatchingProducts);
 
     console.log("sorting");
 
@@ -160,63 +165,58 @@ function sortProducts() {
 
 function populateResults() {
 
-    setTimeout(function () {
+    console.log("populateResults running");
 
-        console.log("populateResults running");
+    console.log(allMatchingProducts);
 
-        console.log(allMatchingProducts);
+    for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
-        for (i = 0; i < allMatchingProducts.length - 1; i++) {
+        console.log("content loop running" + i);
 
-            console.log("content loop running" + i);
+        productDiv = $("<div></div>");
 
-            productDiv = $("<div></div>");
+        namePara = $("<p></p>");
+        namePara.text(allMatchingProducts[i].name);
 
-            namePara = $("<p></p>");
-            namePara.text(allMatchingProducts[i].name);
+        pricePara = $("<p></p>").text(allMatchingProducts[i].price);
 
-            pricePara = $("<p></p>").text(allMatchingProducts[i].price);
+        productDiv.append(namePara, pricePara);
 
-            productDiv.append(namePara, pricePara);
+        productImage = $("<img></img>");
+        productImage.attr("src", allMatchingProducts[i].imageSource);
+        productDiv.append(productImage);
 
-            productImage = $("<img></img>");
-            productImage.attr("src", allMatchingProducts[i].imageSource);
-            productDiv.append(productImage);
+        storeDiv = $("<div></div>");
 
-            storeDiv = $("<div></div>");
+        if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
 
-            if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
+            storeHeader = $("<h4></h4>")
+            storeHeader.text("Available at:");
+            storeDiv.append(storeHeader);
 
-                storeHeader = $("<h4></h4>")
-                storeHeader.text("Available at:");
-                storeDiv.append(storeHeader);
+            storePara = $("<p></p>");
+            console.log("writing " + allMatchingProducts[i].stores);
+            storePara.text(allMatchingProducts[i].stores);
+            storeDiv.append(storePara);
 
-                storePara = $("<p></p>");
-                console.log("writing " + allMatchingProducts[i].stores);
-                storePara.text(allMatchingProducts[i].stores);
-                storeDiv.append(storePara);
+            // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
+        } else {
 
-                // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
-            } else {
+            storeHeader = $("<h4></h4>")
+            storeHeader.text("Not available locally!");
+            storeDiv.append(storeHeader);
 
-                storeHeader = $("<h4></h4>")
-                storeHeader.text("Not available locally!");
-                storeDiv.append(storeHeader);
-
-                storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
-                storeDiv.append(storePara);
-            }
-
-            productDiv.append(storeDiv);
-
-            resultsContainer.append(productDiv);
-
+            storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
+            storeDiv.append(storePara);
         }
-    }, 5000);
 
+        productDiv.append(storeDiv);
+
+        resultsContainer.append(productDiv);
+    }
 }
 
-// the on.click order. returnProducts calls sortProducts and sortProducts calls populateStores, so sortProduct and populateStores do not need to be seperately called. 
+// the on.click order. returnProducts calls sortProducts and sortProducts calls populateStores, so sortProducts and populateStores do not need to be seperately called. 
 
 searchBtn.on("click", function () {
 
@@ -225,8 +225,6 @@ searchBtn.on("click", function () {
     spendRange();
 
     returnProducts();
-
-    populateResults();
 })
 
 
