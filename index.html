@@ -29,8 +29,26 @@
     </header>
 
     <section id="search">
+
         <div class="max-w-sm rounded overflow-hidden shadow-lg border border-black">
-            <!-- ^makes card around search button^ -->
+            <!-- ^makes card around spend / search input^ -->
+
+            <!-- Add max spend input -->
+            <div class="px-6 py-4">
+                <div class="container mx-auto flex" id="spend-container">
+                    <form class="w-full max-w-sm ">
+                        <div class="flex">
+                            <!-- input has classes to give style around spend input  -->
+                            <input
+                                class="w-full appearance-none bg-transparent border border-gray-300 w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none focus:shadow-outline"
+                                type="text " placeholder="Max Spend" aria-label="Max Spend Query" id="spend-input">
+                            </input>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add search input -->
             <div class="px-6 py-4">
                 <div class="container mx-auto flex" id="search-container">
                     <form class="w-full max-w-sm ">
@@ -46,7 +64,6 @@
                                 type="button" id="search-button">
                                 Search
                             </button>
-
                         </div>
                     </form>
                 </div>
