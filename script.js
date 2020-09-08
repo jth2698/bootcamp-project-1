@@ -30,6 +30,8 @@ function spendRange() {
     console.log(spendCap);
 
     spendLow = spendCap - (spendCap * .5);
+
+    console.log(spendLow.toString());
 }
 
 // returnProducts returns all matching products in response to user search input. this function pushes the needed key-value pairs into the allMatchingProducts array. however, note that this does not return local stores.
@@ -44,6 +46,8 @@ function returnProducts() {
 
     let queryURL = "((search=" + query + ")";
 
+    let priceFloor = "&salePrice>=" + spendLow.toString();
+
     let activeProducts = "&sku=*";
 
     let inStoreURL = "&inStoreAvailability=true)?";
@@ -54,11 +58,14 @@ function returnProducts() {
 
     let format = "&format=json";
 
-    let productURL = baseURL + queryURL + activeProducts + inStoreURL + pageSize + cursorMark + BBAPIKey + format;
+    let productURL = baseURL + queryURL + priceFloor + activeProducts + inStoreURL + pageSize + cursorMark + BBAPIKey + format;
 
     let allMatchingProductsI = 0;
 
     console.log(productURL);
+
+    let maxPages = 5;
+    let maxPageI = 1;
 
     $.ajax({
 
@@ -66,34 +73,42 @@ function returnProducts() {
         url: "https://cors-anywhere.herokuapp.com/" + productURL,
         method: "GET",
 
-    }).then(function (productResponse) {
-
-        let allReturnedProducts = productResponse.products;
-
-        for (i = 0; i < allReturnedProducts.length - 1; i++) {
-
-            console.log("pushing into allMatchingProducts")
-
-            let productName = allReturnedProducts[i].name;
-            let productImageSrc = allReturnedProducts[i].thumbnailImage;
-            let productSKU = allReturnedProducts[i].sku;
-            let productPrice = allReturnedProducts[i].salePrice;
-            // this remains as an empty array even after this function runs
-            let productStores = [];
-            let productStoreAddresses = [];
-            let productURL = allReturnedProducts[i].url;
-
-            if (productPrice > spendLow && productPrice < spendCap) {
-
-                allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "stores": productStores, "storeAddresses": productStoreAddresses, "url": productURL };
-
-                allMatchingProductsI++;
-            }
-        }
-        // sortProducts always run as soon as BB product results are pushed into allMatchingProducts. see sortProducts description below populateStores.
-        sortProducts();
     })
+
+        .then(function (productResponse) {
+
+            let allReturnedProducts = productResponse.products;
+
+            for (i = 0; i < allReturnedProducts.length - 1; i++) {
+
+                let productName = allReturnedProducts[i].name;
+                let productImageSrc = allReturnedProducts[i].thumbnailImage;
+                let productSKU = allReturnedProducts[i].sku;
+                let productPrice = allReturnedProducts[i].salePrice;
+                // this remains as an empty array even after this function runs
+                let productStores = [];
+                let productStoreAddresses = [];
+                let productURL = allReturnedProducts[i].url;
+
+                if (productPrice > spendLow && productPrice < spendCap) {
+
+                    console.log("pushing into allMatchingProducts");
+
+                    allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "stores": productStores, "storeAddresses": productStoreAddresses, "url": productURL };
+
+                    allMatchingProductsI++;
+
+                    console.log(allMatchingProducts);
+                }
+
+            }
+
+            // sortProducts always run as soon as BB product results are pushed into allMatchingProducts. see sortProducts description below populateStores.
+            sortProducts();
+
+        })
 }
+
 
 
 // populateStores pushes the store information into allMatchingProducts. note that this needs to be set up as an "async" function that waits for the result of the promise from the ajax call before. otherwise, the first loop will run before the promise reflected by the ajax call returns (meaning all stores will be pushed into the last allMatchingProducts object)
@@ -124,20 +139,24 @@ async function populateStores() {
 
         })
 
-        for (x = 0; x < storeResponse.stores.length - 1; x++) {
+        for (x = 0; x < storeResponse.stores.length - 1 && x < 5; x++) {
 
             console.log(storeURL);
 
-            console.log("pushing stores");
+            console.log("pushing stores into allMatchingProducts " + i);
             allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
             allMatchingProducts[i].storeAddresses.push(JSON.stringify(storeResponse.stores[x].address));
 
             console.log(allMatchingProducts);
         }
+
+
     }
 
     // do not want populateResults to run until all stores have been populated
     populateResults();
+
+    populateStoreMarkers();
 }
 
 
@@ -173,40 +192,44 @@ function populateResults() {
 
         console.log("content loop running" + i);
 
-        productDiv = $("<div></div>");
+        let productDiv = $("<div></div>");
 
-        namePara = $("<p></p>");
-        namePara.text(allMatchingProducts[i].name);
+        let namePara = $("<p></p>").text(allMatchingProducts[i].name);
 
-        pricePara = $("<p></p>").text(allMatchingProducts[i].price);
+        let pricePara = $("<p></p>").text(allMatchingProducts[i].price);
 
         productDiv.append(namePara, pricePara);
 
-        productImage = $("<img></img>");
-        productImage.attr("src", allMatchingProducts[i].imageSource);
+        let productImage = $("<img></img>").attr("src", allMatchingProducts[i].imageSource);
         productDiv.append(productImage);
 
-        storeDiv = $("<div></div>");
+        let storeDiv = $("<div></div>");
 
         if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
 
-            storeHeader = $("<h4></h4>")
-            storeHeader.text("Available at:");
+            let storeHeader = $("<h4></h4>").text("Available at:");
             storeDiv.append(storeHeader);
 
-            storePara = $("<p></p>");
+            let storeLi = $("<li></li>");
             console.log("writing " + allMatchingProducts[i].stores);
-            storePara.text(allMatchingProducts[i].stores);
-            storeDiv.append(storePara);
+
+            for (x = 0; x < allMatchingProducts[i].stores.length - 1; x++) {
+
+                let store = allMatchingProducts[i].stores[x];
+                store.replace("\"", "");
+                let storeUl = $("<ul></ul>").text(store);
+                storeLi.append(storeUl);
+            }
+
+            storeDiv.append(storeLi);
 
             // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
         } else {
 
-            storeHeader = $("<h4></h4>")
-            storeHeader.text("Not available locally!");
+            let storeHeader = $("<h4></h4>").text("Not available locally!");
             storeDiv.append(storeHeader);
 
-            storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
+            let storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
             storeDiv.append(storePara);
         }
 
@@ -229,12 +252,12 @@ searchBtn.on("click", function () {
 
 
 
-var map, infoWindow;
+var map, infoWindow, geocoder;
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 30.2672, lng: -97.7431 },
-        zoom: 13
+        zoom: 10
     });
     infoWindow = new google.maps.InfoWindow;
 
@@ -254,7 +277,6 @@ function initMap() {
     }, "jsonp");
 
     console.log(google.maps);
-
 
     // if (navigator.geolocation) {
     //     navigator.geolocation.getCurrentPosition(function(position) {
@@ -285,4 +307,37 @@ function handleLocationError(browserHasGeolocation, infoWindow, pos) {
         'Error: The Geolocation service failed.' :
         'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(map);
+}
+
+function populateStoreMarkers() {
+
+    console.log("populateStoreMarkers running");
+
+    geocoder = new google.maps.Geocoder();
+
+    var marker, i;
+
+    for (i = 0; i < allMatchingProducts.length - 1; i++) {
+
+        if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
+
+            for (x = 0; x < allMatchingProducts[i].storeAddresses.length - 1; x++) {
+
+                var address = allMatchingProducts[i].storeAddresses[x];
+                console.log(address);
+
+                geocoder.geocode({ 'address': address }, function (results, status) {
+                    if (status == 'OK') {
+                        map.setCenter(results[0].geometry.location);
+                        marker = new google.maps.Marker({
+                            map: map,
+                            position: results[0].geometry.location
+                        });
+                    } else {
+                        console.log('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+            }
+        }
+    }
 }
