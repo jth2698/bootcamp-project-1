@@ -173,7 +173,7 @@ function populateResults() {
 
         console.log("content loop running" + i);
 
-        productDiv = $("<div></div>");
+        productDiv = $("<div></div>").addClass("product-div");
 
         namePara = $("<p></p>");
         namePara.text(allMatchingProducts[i].name);
@@ -186,6 +186,8 @@ function populateResults() {
         productImage.attr("src", allMatchingProducts[i].imageSource);
         productDiv.append(productImage);
 
+        
+        // v creates
         storeDiv = $("<div></div>");
 
         if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
