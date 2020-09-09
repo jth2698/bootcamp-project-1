@@ -4,7 +4,7 @@ const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
 
 // target the results container
-const resultsContainer = $("#results-container");
+const resultsShow = $("#results-show");
 
 // globally define postal code, spend range, base BB URL, and the BB API key, and create an empty array to hold the object to be created from the BB API return
 // note that the zip is hard-coded until we can figure out how to pass zip from the BB API
@@ -193,11 +193,11 @@ function populateResults() {
 
         console.log("content loop running" + i);
 
-        let productDiv = $("<div></div>").addClass("product-div");
+        let productDiv = $("<div></div>").addClass("product-div max-w-sm rounded overflow-hidden shadow-lg border border-black");
 
-        let namePara = $("<p></p>").text(allMatchingProducts[i].name);
+        let namePara = $("<p></p>").addClass("font-bold").text(allMatchingProducts[i].name);
 
-        let pricePara = $("<p></p>").text(allMatchingProducts[i].price);
+        let pricePara = $("<p></p>").text("$" + allMatchingProducts[i].price);
 
         productDiv.append(namePara, pricePara);
 
@@ -211,18 +211,18 @@ function populateResults() {
             let storeHeader = $("<h4></h4>").text("Available at:");
             storeDiv.append(storeHeader);
 
-            let storeLi = $("<li></li>");
+            let storeUl = $("<ul></ul>").addClass("list-disc");
             console.log("writing " + allMatchingProducts[i].stores);
 
             for (x = 0; x < allMatchingProducts[i].stores.length - 1; x++) {
 
                 let store = allMatchingProducts[i].stores[x];
                 store.replace("\"", "");
-                let storeUl = $("<ul></ul>").text(store);
-                storeLi.append(storeUl);
+                let storeLi = $("<li></li>").text(store);
+                storeUl.append(storeLi);
             }
 
-            storeDiv.append(storeLi);
+            storeDiv.append(storeUl);
 
             // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
         } else {
@@ -236,7 +236,7 @@ function populateResults() {
 
         productDiv.append(storeDiv);
 
-        resultsContainer.append(productDiv);
+        resultsShow.append(productDiv);
     }
 }
 
@@ -244,7 +244,7 @@ function populateResults() {
 
 searchBtn.on("click", function () {
 
-    resultsContainer.empty();
+    resultsShow.empty();
 
     spendRange();
 
