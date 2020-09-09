@@ -3,6 +3,7 @@ const spendInput = $("#spend-input");
 const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
 
+// shhh. easter egg. don't tell.
 const spyKidsButton = $("#spy-kids");
 
 // target the results section and results-show container
@@ -11,7 +12,6 @@ const loadingDiv = $("#loading");
 const resultsShow = $("#results-show");
 
 // globally define postal code, spend range, base BB URL, and the BB API key, and create an empty array to hold the object to be created from the BB API return
-// note that the zip is hard-coded until we can figure out how to pass zip from the BB API
 
 let postalCode = "";
 
@@ -31,11 +31,7 @@ function spendRange() {
 
     spendCap = spendInput.val();
 
-    console.log(spendCap);
-
-    spendLow = spendCap - (spendCap * .5);
-
-    console.log(spendLow.toString());
+    spendLow = spendCap - (spendCap * .25);
 }
 
 // returnProducts returns all matching products in response to user search input. this function pushes the needed key-value pairs into the allMatchingProducts array. however, note that this does not return local stores.
@@ -45,8 +41,9 @@ function returnProducts() {
     let query = searchInput.val();
     query = query.toString();
     query = query.trim();
+
+    // need to add &search to search terms with phrases to pass to the BB API
     query = query.replace(" ", "&search=");
-    console.log(query);
 
     let queryURL = "((search=" + query + ")";
 
@@ -68,9 +65,6 @@ function returnProducts() {
 
     console.log(productURL);
 
-    let maxPages = 5;
-    let maxPageI = 1;
-
     $.ajax({
 
         // using this app as a quick fix to avoid CORS errors
@@ -89,9 +83,11 @@ function returnProducts() {
                 let productImageSrc = allReturnedProducts[i].thumbnailImage;
                 let productSKU = allReturnedProducts[i].sku;
                 let productPrice = allReturnedProducts[i].salePrice;
-                // this remains as an empty array even after this function runs
+
+                // these remain as empty arrays even after this function runs; will be populated through populteStores function
                 let productStores = [];
                 let productStoreAddresses = [];
+
                 let productURL = allReturnedProducts[i].url;
 
                 if (productPrice > spendLow && productPrice < spendCap) {
@@ -105,11 +101,8 @@ function returnProducts() {
 
             // sortProducts always run as soon as BB product results are pushed into allMatchingProducts. see sortProducts description below populateStores.
             sortProducts();
-
         })
 }
-
-
 
 // populateStores pushes the store information into allMatchingProducts. note that this needs to be set up as an "async" function that waits for the result of the promise from the ajax call before. otherwise, the first loop will run before the promise reflected by the ajax call returns (meaning all stores will be pushed into the last allMatchingProducts object)
 
@@ -121,9 +114,9 @@ async function populateStores() {
 
     allMatchingProducts = allMatchingProducts.slice(0, 9);
 
-    for (i = 0; i < allMatchingProducts.length - 1; i++) {
+    console.log(allMatchingProducts);
 
-        console.log("populateStores running");
+    for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
         let skuInsert = "/" + allMatchingProducts[i].sku + "/stores.json?";
 
@@ -145,10 +138,7 @@ async function populateStores() {
 
             allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
             allMatchingProducts[i].storeAddresses.push(JSON.stringify(storeResponse.stores[x].address));
-
-            console.log(allMatchingProducts);
         }
-
     }
 
     // remove cute loading text
@@ -179,60 +169,66 @@ function sortProducts() {
 
 }
 
-// populateResults creates the results on the page after opoulateStores has run. note that it is wrapped in a setTimeout to ensure that it does not run until after populateStores has completed. this is potentially a temporary fix to avoid creating empty results before populate stores has run.
+// populateResults creates the results on the page after populateStores has run.
 
 function populateResults() {
 
     console.log("populateResults running");
 
-    console.log(allMatchingProducts);
-
     for (i = 0; i < allMatchingProducts.length - 1; i++) {
 
-        let productDiv = $("<div></div>").addClass("product-div max-w-sm rounded overflow-hidden shadow-lg border border-black");
+        if (allMatchingProducts && allMatchingProducts.length) {
 
-        let namePara = $("<p></p>").addClass("font-bold").text(allMatchingProducts[i].name);
+            let productDiv = $("<div></div>").addClass("product-div max-w-sm rounded overflow-hidden shadow-lg border border-black");
 
-        let pricePara = $("<p></p>").text("$" + allMatchingProducts[i].price);
+            let namePara = $("<p></p>").addClass("font-bold").text(allMatchingProducts[i].name);
 
-        productDiv.append(namePara, pricePara);
+            let pricePara = $("<p></p>").text("$" + allMatchingProducts[i].price);
 
-        let productImage = $("<img></img>").attr("src", allMatchingProducts[i].imageSource);
-        productDiv.append(productImage);
+            productDiv.append(namePara, pricePara);
 
-        let storeDiv = $("<div></div>");
+            let productImage = $("<img></img>").attr("src", allMatchingProducts[i].imageSource);
+            productDiv.append(productImage);
 
-        if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
+            let storeDiv = $("<div></div>");
 
-            let storeHeader = $("<h4></h4>").text("Available at:");
-            storeDiv.append(storeHeader);
+            if (allMatchingProducts[i].stores && allMatchingProducts[i].stores.length) {
 
-            let storeUl = $("<ul></ul>").addClass("list-disc");
-            console.log("writing " + allMatchingProducts[i].stores);
+                let storeHeader = $("<h4></h4>").text("Available at:");
+                storeDiv.append(storeHeader);
 
-            for (x = 0; x < allMatchingProducts[i].stores.length - 1; x++) {
+                let storeUl = $("<ul></ul>").addClass("list-disc");
 
-                let store = allMatchingProducts[i].stores[x];
-                store.replace("\"", "");
-                let storeLi = $("<li></li>").text(store);
-                storeUl.append(storeLi);
+                for (x = 0; x < allMatchingProducts[i].stores.length - 1; x++) {
+
+                    let store = allMatchingProducts[i].stores[x];
+                    store.replace("\"", "");
+                    let storeLi = $("<li></li>").text(store);
+                    storeUl.append(storeLi);
+                }
+
+                storeDiv.append(storeUl);
+
+                // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
+            } else {
+
+                let storeHeader = $("<h4></h4>").text("Not available locally!");
+                storeDiv.append(storeHeader);
+
+                let storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
+                storeDiv.append(storePara);
             }
 
-            storeDiv.append(storeUl);
+            productDiv.append(storeDiv);
 
-            // want to write the BB product URL to the page if there are no local stores. allows the user to order online if they cannot get locally.
-        } else {
-
-            let storeHeader = $("<h4></h4>").text("Not available locally!");
-            storeDiv.append(storeHeader);
-
-            let storePara = $("<p>Try online at " + allMatchingProducts[i].url + "</p>");
-            storeDiv.append(storePara);
+            resultsShow.append(productDiv);
         }
 
-        productDiv.append(storeDiv);
+        else {
+            let productDiv = $("<div></div>").text("No results. Try upping the max spend, cheapskate! (Just kidding, Cheap Cheap loves you.)");
 
-        resultsShow.append(productDiv);
+            resultsShow.append(productDiv);
+        }
     }
 }
 
@@ -244,12 +240,15 @@ searchBtn.on("click", function () {
 
     resultsSection.removeClass("invisible");
 
+    // add cute loding text
     loadingDiv.removeClass("invisible");
 
     spendRange();
 
     returnProducts();
 })
+
+// shhh. easter egg. don't tell.
 
 spyKidsButton.on("click", function () {
 
@@ -288,10 +287,13 @@ spyKidsButton.on("click", function () {
         })
 })
 
+// initialize map on page load.
 
 var map, infoWindow, geocoder;
 
 function initMap() {
+
+    console.log("initMap running");
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 30.2672, lng: -97.7431 },
@@ -301,29 +303,22 @@ function initMap() {
 
     $.get("https://ipinfo.io?token=d92f854e302724", function (response) {
 
-        console.log(response.ip, response.country);
-
         var coordinates = response.loc.split(",");
-        console.log(coordinates);
 
         var pos = {
             lat: parseFloat(coordinates[0]),
             lng: parseFloat(coordinates[1])
         };
-        console.log(pos);
 
         map.setCenter(pos);
 
+        // use this to fee into the main BB functions
         postalCode = response.postal;
 
-        console.log(postalCode);
-
     }, "jsonp");
-
-    console.log(google.maps);
 }
 
-
+// this loops through the final allMatchingProducts object we create above and creates map markers for each store returning
 
 function populateStoreMarkers() {
 
@@ -358,6 +353,17 @@ function populateStoreMarkers() {
                         console.log('Geocode was not successful for the following reason: ' + status);
                     }
                 });
+
+                // google.maps.event.addListener(marker, "click", function () {
+                //     infowindow.setContent(
+                //         "<div><strong>" +
+                //         storeName +
+                //         "</strong><br>" +
+                //         "<br>" +
+                //         storeAddress +
+                //         "</div>"
+                //     );
+                // })
             }
         }
     }
