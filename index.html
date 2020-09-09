@@ -24,7 +24,7 @@
                     </g></svg>
                 <span class="font-semibold text-xl tracking-tight">Cheap Cheap</span>
             </div>
-            <button class="float-left">Home</button>
+            <button class="float-left" id="spy-kids">.</button>
         </nav>
     </header>
 
@@ -87,12 +87,14 @@
 
     <br>
     <!-- id hide for javascript functionality to display results -->
-    <div class="grid grid-rows-1">
-        <section id="results">
-            <div class="container mx-auto col-span-2" id="results-container">
-                <h1 class="text-2xl">Results!</h1>
+    <div class="grid">
+        <section class="invisible" id="results">
+            <div class="container mx-auto" id="results-container">
+                <h1 class="text-2xl">Results</h1>
                 <div>
-                    <!-- lorem ipsum just placeholder until we get javascript to populate information -->
+                    <div class="invisble text-center" id="loading">Cheap Cheap's highly proprietary technology is
+                        finding you the
+                        best deals humanly possible. We'll be with you shortly.</div>
                     <div class="b border-t-4 border-teal-500 rounded-b  px-4 py-3 shadow-md" id="results-show"></div>
                 </div>
             </div>
