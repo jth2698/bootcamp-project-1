@@ -6,7 +6,7 @@ Have you been marooned at home with no hope of finding electronics near you? Hav
 
 [CheapCheap](https://jth2698.github.io/bootcamp-project-1/)
 
-![Screencap](Images/screencap.png)
+![Screencap](./Images/Screencap.png)
 
 
 ## Technologies Used
@@ -27,7 +27,7 @@ Have you been marooned at home with no hope of finding electronics near you? Hav
 
 _"Sometimes the treasure isn't at the end of the journey, it was in the friendship ye made along the way."_
 
-![Fearless](Images/fearless.png)
+![Fearless](./Images/Fearless.png)
 
 ## Contributing
 
