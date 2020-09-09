@@ -9,7 +9,7 @@ const resultsContainer = $("#results-container");
 // globally define postal code, spend range, base BB URL, and the BB API key, and create an empty array to hold the object to be created from the BB API return
 // note that the zip is hard-coded until we can figure out how to pass zip from the BB API
 
-let postalCode = "78751";
+let postalCode = "";
 
 let spendCap = "";
 
@@ -156,6 +156,7 @@ async function populateStores() {
     // do not want populateResults to run until all stores have been populated
     populateResults();
 
+    // populateStoreMarkers also needs to wait for store population becuase it uses the populated storeAddress array within allMatchingProducts
     populateStoreMarkers();
 }
 
@@ -250,11 +251,10 @@ searchBtn.on("click", function () {
     returnProducts();
 })
 
-
-
 var map, infoWindow, geocoder;
 
 function initMap() {
+
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 30.2672, lng: -97.7431 },
         zoom: 10
@@ -262,18 +262,30 @@ function initMap() {
     infoWindow = new google.maps.InfoWindow;
 
     $.get("https://ipinfo.io?token=d92f854e302724", function (response) {
+
         console.log(response.ip, response.country);
+
         var coordinates = response.loc.split(",");
         console.log(coordinates);
+
         var pos = {
             lat: parseFloat(coordinates[0]),
             lng: parseFloat(coordinates[1])
         };
         console.log(pos);
+
         infoWindow.setPosition(pos);
+
         infoWindow.setContent('Lets find some Best Buys');
+
         infoWindow.open(map);
+
         map.setCenter(pos);
+
+        postalCode = response.postal;
+
+        console.log(postalCode);
+
     }, "jsonp");
 
     console.log(google.maps);
@@ -299,13 +311,18 @@ function initMap() {
 }
 
 function getGeolocation() {
+
     navigator.geolocation.getCurrentPosition(success, error);
 }
+
 function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+
     infoWindow.setPosition(pos);
+
     infoWindow.setContent(browserHasGeolocation ?
         'Error: The Geolocation service failed.' :
         'Error: Your browser doesn\'t support geolocation.');
+
     infoWindow.open(map);
 }
 
@@ -327,12 +344,14 @@ function populateStoreMarkers() {
                 console.log(address);
 
                 geocoder.geocode({ 'address': address }, function (results, status) {
+
                     if (status == 'OK') {
                         map.setCenter(results[0].geometry.location);
                         marker = new google.maps.Marker({
                             map: map,
                             position: results[0].geometry.location
                         });
+
                     } else {
                         console.log('Geocode was not successful for the following reason: ' + status);
                     }
