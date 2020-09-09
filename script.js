@@ -31,7 +31,7 @@ function spendRange() {
 
     spendCap = spendInput.val();
 
-    spendLow = spendCap - (spendCap * .25);
+    spendLow = spendCap - (spendCap * .5);
 }
 
 // returnProducts returns all matching products in response to user search input. this function pushes the needed key-value pairs into the allMatchingProducts array. however, note that this does not return local stores.
@@ -112,7 +112,7 @@ async function populateStores() {
 
     // we slice the allMatchingProducts array to the first 10 entries to avoid hammering the BB API. These will be the 10 cheapest within the spend range
 
-    allMatchingProducts = allMatchingProducts.slice(0, 9);
+    allMatchingProducts = allMatchingProducts.slice(0, 14);
 
     console.log(allMatchingProducts);
 
@@ -201,9 +201,11 @@ function populateResults() {
 
                 for (x = 0; x < allMatchingProducts[i].stores.length - 1; x++) {
 
-                    let store = allMatchingProducts[i].stores[x];
-                    store.replace("\"", "");
-                    let storeLi = $("<li></li>").text(store);
+                    let store = JSON.stringify(allMatchingProducts[i].stores[x]);
+                    console.log(store);
+                    store = store.replace("\"\\\"", "");
+                    store = store.replace("\\\"\"", "");
+                    let storeLi = $("<li></li>").text("Best Buy, " + store);
                     storeUl.append(storeLi);
                 }
 
@@ -337,8 +339,10 @@ function populateStoreMarkers() {
                 var storeAddress = allMatchingProducts[i].storeAddresses[x];
                 console.log(storeAddress);
 
-                var storeName = allMatchingProducts[i].stores[x];
-                console.log(storeName);
+                // adding the store name did not work - always returned the last store name in the array. saving it for the beta release.
+
+                //var storeName = allMatchingProducts[i].stores[x];
+                //console.log(storeName);
 
                 geocoder.geocode({ 'address': storeAddress, }, function (results, status) {
 
@@ -347,23 +351,13 @@ function populateStoreMarkers() {
                         marker = new google.maps.Marker({
                             map: map,
                             position: results[0].geometry.location,
+                            //label: { text: storeName }
                         });
 
                     } else {
                         console.log('Geocode was not successful for the following reason: ' + status);
                     }
                 });
-
-                // google.maps.event.addListener(marker, "click", function () {
-                //     infowindow.setContent(
-                //         "<div><strong>" +
-                //         storeName +
-                //         "</strong><br>" +
-                //         "<br>" +
-                //         storeAddress +
-                //         "</div>"
-                //     );
-                // })
             }
         }
     }
