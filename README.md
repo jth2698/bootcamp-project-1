@@ -18,6 +18,8 @@ Have you been marooned at home with no hope of finding electronics near you? Hav
 * Javascript
 * Best Buy API
 * Google Maps
+* jQuery
+* Ipinfo.io
 
 ## Authors
 
