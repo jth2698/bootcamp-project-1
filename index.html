@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cheap Cheap</title>
+    <title>CheapCheap</title>
     <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -27,6 +27,22 @@
             <button class="float-left" id="spy-kids">.</button>
         </nav>
     </header>
+
+    <br>
+
+    <section id="welcome">
+        <div class="container mx-auto">
+            <div class="flex items-center">
+                <div class="flex-1">
+                    <h1 class="object-center text-center p-4 text-3xl text-gray-700 uppercase">Find the best local big
+                        box deals,
+                        fast<span class="text-sm lowercase">(ish)</span>.</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <br>
 
     <section id="search">
 
@@ -55,8 +71,6 @@
                                 class="w-full appearance-none bg-transparent border border-gray-300 w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none focus:shadow-outline"
                                 type="text " placeholder="Max Spend" aria-label="Max Spend Query" id="spend-input">
                             </input>
-
-
                         </div>
                     </form>
                 </div>
@@ -87,43 +101,27 @@
 
     <br>
     <!-- id hide for javascript functionality to display results -->
-    <div class="grid">
-        <section class="invisible" id="results">
-            <div class="container mx-auto" id="results-container">
-                <h1 class="text-2xl">Results</h1>
-                <div>
-                    <div class="invisble text-center" id="loading">Cheap Cheap's highly proprietary technology is
-                        finding you the
-                        best deals humanly possible. We'll be with you shortly.</div>
-                    <div class="b border-t-4 border-teal-500 rounded-b  px-4 py-3 shadow-md" id="results-show"></div>
-                </div>
+    <section class="invisible" id="results">
+        <div class="container mx-auto" id="results-container">
+
+            <h1 class="text-2xl">Results</h1>
+            <div>
+                <div class="invisble text-center" id="loading">Cheap Cheap's highly proprietary technology is
+                    finding you the
+                    best deals humanly possible. We'll be with you shortly.</div>
+                <div class="b border-t-4 border-teal-500 rounded-b  px-4 py-3 shadow-md" id="results-show"></div>
             </div>
-        </section>
+        </div>
+    </section>
 
 
-        <br>
+    <br>
 
-        <!-- id to populate with map information -->
-        <!-- <section class="sticky-bottom">
-            <form class=" bg-white shadow-md rounded px-8 pt-6 pb-4 mb-4">
-                <div class="container mx-auto mb-4" id="map-container">
-                    <div class="grid">
-                        <h1 class="text-xl">Map</h1>
-                        <div id="map"></div>
-                    </div>
-                </div>
-                </div>
-            </form>
-        </section>
-    </section> -->
-
-
-
-        <footer></footer>
-        <script defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKupb-SQk5upLX1icro95b12vwI0L_AGo&callback=initMap"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js "></script>
-        <script src="script.js"></script>
+    <footer></footer>
+    <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKupb-SQk5upLX1icro95b12vwI0L_AGo&callback=initMap"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js "></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
