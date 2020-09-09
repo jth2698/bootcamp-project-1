@@ -30,6 +30,18 @@
 
     <section id="search">
 
+ <section class="map-width">
+            <form class=" bg-white shadow-md rounded px-8 pt-6 pb-4 mb-4">
+                <div class="container mx-auto mb-4" id="map-container">
+                    <div class="grid">
+                        <h1 class="text-xl">Map</h1>
+                        <div id="map"></div>
+                    </div>
+                </div>
+                </div>
+            </form>
+        </section>
+
         <div class="max-w-sm rounded overflow-hidden shadow-lg border border-black">
             <!-- ^makes card around spend / search input^ -->
 
@@ -43,6 +55,8 @@
                                 class="w-full appearance-none bg-transparent border border-gray-300 w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none focus:shadow-outline"
                                 type="text " placeholder="Max Spend" aria-label="Max Spend Query" id="spend-input">
                             </input>
+
+                            
                         </div>
                     </form>
                 </div>
@@ -79,10 +93,7 @@
                 <h1 class="text-2xl">Results!</h1>
                 <div>
                     <!-- lorem ipsum just placeholder until we get javascript to populate information -->
-                    <div class="b border-t-4 border-teal-500 rounded-b  px-4 py-3 shadow-md" id="results-show">Lorem
-                        ipsum dolor sit amet consectetur adipisicing elit. Pariatur modi voluptas
-                        dolores numquam corporis vero neque iusto dicta temporibus quos, amet magnam adipisci esse
-                        architecto quam totam! Officiis, quos odio.</div>
+                    <div class="b border-t-4 border-teal-500 rounded-b  px-4 py-3 shadow-md" id="results-show"></div>
                 </div>
             </div>
         </section>
@@ -91,18 +102,18 @@
         <br>
 
         <!-- id to populate with map information -->
-        <section id="map">
-            <div class="container mx-auto " id="map-container">
-                <div class="grid">
-                    <h1 class="text-xl">Map</h1>
-                    <div>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nemo odit rerum quisquam expedita,
-                        laudantium neque illum, porro ipsum soluta repudiandae tempore id, tenetur possimus minus
-                        magnam.
-                        Dignissimos, debitis! Asperiores, culpa.</div>
+        <!-- <section class="sticky-bottom">
+            <form class=" bg-white shadow-md rounded px-8 pt-6 pb-4 mb-4">
+                <div class="container mx-auto mb-4" id="map-container">
+                    <div class="grid">
+                        <h1 class="text-xl">Map</h1>
+                        <div id="map"></div>
+                    </div>
                 </div>
-            </div>
-    </div>
-    </section>
+                </div>
+            </form>
+        </section>
+    </section> -->
 
 
 

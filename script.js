@@ -193,7 +193,7 @@ function populateResults() {
 
         console.log("content loop running" + i);
 
-        let productDiv = $("<div></div>");
+        let productDiv = $("<div></div>").addClass("product-div");
 
         let namePara = $("<p></p>").text(allMatchingProducts[i].name);
 
