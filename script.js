@@ -3,7 +3,11 @@ const spendInput = $("#spend-input");
 const searchInput = $("#search-input");
 const searchBtn = $("#search-button");
 
-// target the results container
+const spyKidsButton = $("#spy-kids");
+
+// target the results section and results-show container
+const resultsSection = $("#results");
+const loadingDiv = $("#loading");
 const resultsShow = $("#results-show");
 
 // globally define postal code, spend range, base BB URL, and the BB API key, and create an empty array to hold the object to be created from the BB API return
@@ -92,13 +96,9 @@ function returnProducts() {
 
                 if (productPrice > spendLow && productPrice < spendCap) {
 
-                    console.log("pushing into allMatchingProducts");
-
                     allMatchingProducts[allMatchingProductsI] = { "name": productName, "imageSource": productImageSrc, "sku": productSKU, "price": productPrice, "stores": productStores, "storeAddresses": productStoreAddresses, "url": productURL };
 
                     allMatchingProductsI++;
-
-                    console.log(allMatchingProducts);
                 }
 
             }
@@ -143,15 +143,17 @@ async function populateStores() {
 
             console.log(storeURL);
 
-            console.log("pushing stores into allMatchingProducts " + i);
             allMatchingProducts[i].stores.push(JSON.stringify(storeResponse.stores[x].name));
             allMatchingProducts[i].storeAddresses.push(JSON.stringify(storeResponse.stores[x].address));
 
             console.log(allMatchingProducts);
         }
 
-
     }
+
+    // remove cute loading text
+
+    loadingDiv.addClass("invisible");
 
     // do not want populateResults to run until all stores have been populated
     populateResults();
@@ -165,16 +167,12 @@ async function populateStores() {
 
 function sortProducts() {
 
-    console.log(allMatchingProducts);
-
-    console.log("sorting");
+    console.log("sortProducts running");
 
     allMatchingProducts.sort((a, b) => {
 
         return a.price - b.price;
     });
-
-    console.log(allMatchingProducts);
 
     // note that populateStores is only called after sorting is finished.
     populateStores();
@@ -190,8 +188,6 @@ function populateResults() {
     console.log(allMatchingProducts);
 
     for (i = 0; i < allMatchingProducts.length - 1; i++) {
-
-        console.log("content loop running" + i);
 
         let productDiv = $("<div></div>").addClass("product-div max-w-sm rounded overflow-hidden shadow-lg border border-black");
 
@@ -246,10 +242,52 @@ searchBtn.on("click", function () {
 
     resultsShow.empty();
 
+    resultsSection.removeClass("invisible");
+
+    loadingDiv.removeClass("invisible");
+
     spendRange();
 
     returnProducts();
 })
+
+spyKidsButton.on("click", function () {
+
+    resultsShow.empty();
+
+    resultsSection.removeClass("invisible");
+
+    loadingDiv.removeClass("invisible");
+
+    let randomSpyKid = Math.floor(Math.random() * 9);
+
+    $.ajax({
+
+        // using this app as a quick fix to avoid CORS errors
+        url: "https://api.bestbuy.com/v1/products((search=spy&search=kids))?apiKey=GGmupVaRMy1eDvoIlNss1A0G&format=json",
+        method: "GET",
+
+    })
+
+        .then(function (response) {
+
+            let productDiv = $("<div></div>").addClass("product-div max-w-sm rounded overflow-hidden shadow-lg border border-black");
+
+            let namePara = $("<p></p>").addClass("font-bold").text(response.products[randomSpyKid].name);
+
+            let pricePara = $("<p></p>").text("$" + response.products[randomSpyKid].salePrice);
+
+            productDiv.append(namePara, pricePara);
+
+            let productImage = $("<img></img>").attr("src", response.products[randomSpyKid].thumbnailImage);
+            productDiv.append(productImage);
+
+            loadingDiv.addClass("invisible");
+
+            resultsShow.append(productDiv);
+        })
+})
+
 
 var map, infoWindow, geocoder;
 
@@ -274,12 +312,6 @@ function initMap() {
         };
         console.log(pos);
 
-        infoWindow.setPosition(pos);
-
-        infoWindow.setContent('Lets find some Best Buys');
-
-        infoWindow.open(map);
-
         map.setCenter(pos);
 
         postalCode = response.postal;
@@ -289,42 +321,9 @@ function initMap() {
     }, "jsonp");
 
     console.log(google.maps);
-
-    // if (navigator.geolocation) {
-    //     navigator.geolocation.getCurrentPosition(function(position) {
-    //         var pos = {
-    //             lat: position.coords.latitude,
-    //             lng: position.coords.longitude
-    //         };
-
-    //         infoWindow.setPosition(pos);
-    //         infoWindow.setContent('Lets find some Best Buys');
-    //         infoWindow.open(map);
-    //         map.setCenter(pos);
-    //     }, function() {
-    //         handleLocationError(true, infoWindow, map.getCenter());
-    //     });
-    // } else {
-
-    //     handleLocationError(false, infoWindow, map.getCenter());
-    // }
 }
 
-function getGeolocation() {
 
-    navigator.geolocation.getCurrentPosition(success, error);
-}
-
-function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-
-    infoWindow.setPosition(pos);
-
-    infoWindow.setContent(browserHasGeolocation ?
-        'Error: The Geolocation service failed.' :
-        'Error: Your browser doesn\'t support geolocation.');
-
-    infoWindow.open(map);
-}
 
 function populateStoreMarkers() {
 
@@ -340,16 +339,19 @@ function populateStoreMarkers() {
 
             for (x = 0; x < allMatchingProducts[i].storeAddresses.length - 1; x++) {
 
-                var address = allMatchingProducts[i].storeAddresses[x];
-                console.log(address);
+                var storeAddress = allMatchingProducts[i].storeAddresses[x];
+                console.log(storeAddress);
 
-                geocoder.geocode({ 'address': address }, function (results, status) {
+                var storeName = allMatchingProducts[i].stores[x];
+                console.log(storeName);
+
+                geocoder.geocode({ 'address': storeAddress, }, function (results, status) {
 
                     if (status == 'OK') {
                         map.setCenter(results[0].geometry.location);
                         marker = new google.maps.Marker({
                             map: map,
-                            position: results[0].geometry.location
+                            position: results[0].geometry.location,
                         });
 
                     } else {
